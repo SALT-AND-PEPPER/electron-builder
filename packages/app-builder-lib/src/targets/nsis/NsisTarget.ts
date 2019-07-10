@@ -261,9 +261,10 @@ export class NsisTarget extends Target {
     }
 
     const sharedHeader = await this.computeCommonInstallerScriptHeader()
+    await packager.sign(installerPath)
     const script = isPortable ? await readFile(path.join(nsisTemplatesDir, "portable.nsi"), "utf8") : await this.computeScriptAndSignUninstaller(defines, commands, installerPath, sharedHeader)
     await this.executeMakensis(defines, commands, sharedHeader + await this.computeFinalScript(script, true))
-    await Promise.all<any>([packager.sign(installerPath), defines.UNINSTALLER_OUT_FILE == null ? Promise.resolve() : unlink(defines.UNINSTALLER_OUT_FILE)])
+    await defines.UNINSTALLER_OUT_FILE == null ? Promise.resolve() : unlink(defines.UNINSTALLER_OUT_FILE)
 
     const safeArtifactName = computeSafeArtifactNameIfNeeded(installerFilename, () => this.generateGitHubInstallerName())
     let updateInfo: any
